@@ -1,1 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#05070d">
+<meta name="description" content="ORBIT-X — cinematic satellite orbital decay simulator.">
+<title>ORBIT-X // Orbital Decay Intelligence</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
+:root{
+  --bg:#03050a;--panel:rgba(8,13,23,.72);--panel2:rgba(12,20,33,.86);
+  --cyan:#5cecff;--blue:#4d8dff;--violet:#9d6cff;--green:#70ffbd;
+  --orange:#ffb454;--red:#ff4f73;--text:#eaf7ff;--muted:#7590a9;
+  --line:rgba(103,211,255,.18);--glow:0 0 30px rgba(92,236,255,.16);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;color:var(--text);background:#03050a;
+  font-family:"Space Grotesk",system-ui,sans-serif;overflow-x:hidden;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.08;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,#fff 4px);
+  mix-blend-mode:overlay;
+}
+#stars,#fx{position:fixed;inset:0;pointer-events:none}
+#stars{z-index:-5}.star{position:absolute;border-radius:50%;background:#dffaff;box-shadow:0 0 8px #9eefff;animation:twinkle var(--d) infinite alternate ease-in-out}
+@keyframes twinkle{from{opacity:.15;transform:scale(.7)}to{opacity:1;transform:scale(1.35)}}
+#fx{z-index:-2;background:
+ radial-gradient(circle at 15% 10%,rgba(77,141,255,.14),transparent 30%),
+ radial-gradient(circle at 90% 70%,rgba(157,108,255,.12),transparent 35%);
+}
+.container{width:min(1280px,92vw);margin:auto}
+header{min-height:100vh;position:relative;display:flex;flex-direction:column}
+.nav{
+  height:80px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(103,211,255,.1);position:relative;z-index:5
+}
+.brand{display:flex;align-items:center;gap:13px;font:800 15px Orbitron;letter-spacing:.16em}
+.reactor{
+ width:36px;height:36px;border-radius:50%;position:relative;
+ border:1px solid var(--cyan);box-shadow:0 0 18px rgba(92,236,255,.45),inset 0 0 12px rgba(92,236,255,.2);
+ animation:reactor 2.8s linear infinite
+}
+.reactor:before,.reactor:after{content:"";position:absolute;inset:7px;border-radius:50%;border:1px dashed rgba(92,236,255,.6)}
+.reactor:after{inset:12px;background:var(--cyan);box-shadow:0 0 15px var(--cyan);border:0}
+@keyframes reactor{to{transform:rotate(360deg)}}
+.navlinks{display:flex;gap:26px;font:500 11px Orbitron;color:#7690a9;letter-spacing:.12em}
+.navlinks a:hover{color:var(--cyan)}
+.status{font:600 10px Orbitron;color:var(--green);letter-spacing:.1em}.status i{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 12px var(--green);margin-right:7px;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.hero{flex:1;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:30px;padding:65px 0 55px}
+.kicker{font:700 11px Orbitron;letter-spacing:.24em;color:var(--cyan);text-transform:uppercase}
+h1{font:800 clamp(45px,7vw,92px) Orbitron;line-height:.91;letter-spacing:-.06em;margin:16px 0 25px;text-shadow:0 0 40px rgba(92,236,255,.12)}
+h1 span{display:block;background:linear-gradient(100deg,#fff,var(--cyan),#9d6cff);background-clip:text;-webkit-background-clip:text;color:transparent}
+.hero p{color:#7894ae;line-height:1.8;max-width:650px;font-size:16px}
+.hero-actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+.btn{
+ border:1px solid rgba(92,236,255,.35);background:rgba(92,236,255,.06);color:#dffaff;
+ padding:13px 17px;border-radius:8px;font:700 10px Orbitron;letter-spacing:.1em;cursor:pointer;
+ transition:.25s;position:relative;overflow:hidden
+}
+.btn:before{content:"";position:absolute;inset:0;transform:translateX(-110%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);transition:.5s}
+.btn:hover:before{transform:translateX(110%)}.btn:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(92,236,255,.15)}
+.btn.primary{background:linear-gradient(90deg,rgba(92,236,255,.22),rgba(157,108,255,.18));border-color:var(--cyan)}
+.btn.danger{border-color:rgba(255,79,115,.35);color:#ff9bb0}
+.hud-orbit{height:470px;position:relative;display:grid;place-items:center}
+.radar{
+ position:absolute;width:min(430px,90vw);aspect-ratio:1;border:1px solid rgba(92,236,255,.2);border-radius:50%;
+ box-shadow:inset 0 0 80px rgba(92,236,255,.035),0 0 70px rgba(92,236,255,.05);
+}
+.radar:before,.radar:after{content:"";position:absolute;inset:13%;border:1px dashed rgba(92,236,255,.13);border-radius:50%}
+.radar:after{inset:29%}
+.radar-grid{position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.8%,rgba(92,236,255,.13) 50%,transparent 50.2%),linear-gradient(0deg,transparent 49.8%,rgba(92,236,255,.13) 50%,transparent 50.2%);border-radius:50%}
+.sweep{position:absolute;width:50%;height:2px;top:50%;left:50%;transform-origin:left center;background:linear-gradient(90deg,var(--cyan),transparent);filter:drop-shadow(0 0 8px var(--cyan));animation:sweep 4s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+.earth{
+ width:190px;height:190px;border-radius:50%;position:relative;z-index:2;
+ background:radial-gradient(circle at 34% 27%,#72e9ff 0,#176e9b 28%,#0a2948 64%,#020913 100%);
+ box-shadow:0 0 55px rgba(57,194,255,.22),inset -35px -25px 55px #01050a;
+ animation:earth 14s linear infinite
+}
+@keyframes earth{to{transform:rotate(360deg)}}
+.earth:before{content:"";position:absolute;inset:20px 34px 72px 22px;background:rgba(129,239,184,.55);border-radius:50% 30% 55% 40%;filter:blur(2px);transform:rotate(-20deg)}
+.orbitline{position:absolute;width:410px;height:170px;border:1px solid rgba(157,108,255,.42);border-radius:50%;transform:rotate(-18deg)}
+.satellite{position:absolute;top:76px;left:22px;width:34px;height:10px;background:#dffaff;border-radius:2px;box-shadow:0 0 14px #fff;animation:orb 8s linear infinite}
+.satellite:before,.satellite:after{content:"";position:absolute;width:32px;height:8px;background:#536e8b;top:1px}.satellite:before{right:28px}.satellite:after{left:28px}
+@keyframes orb{to{transform:rotate(360deg) translateX(0)}}
+.readout{position:absolute;right:2%;top:8%;font:600 9px Orbitron;color:#5d7d98;line-height:2.1;text-align:right}
+.readout b{color:var(--cyan)}
+main{padding-bottom:90px}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:45px 0 17px}
+.section-head h2{font:700 25px Orbitron;margin:0;letter-spacing:-.03em}.section-head p{color:var(--muted);font-size:12px;max-width:580px;line-height:1.6}
+.panel{
+ background:linear-gradient(135deg,rgba(13,22,37,.9),rgba(4,10,18,.78));
+ border:1px solid var(--line);border-radius:14px;box-shadow:var(--glow);position:relative;overflow:hidden
+}
+.panel:before{content:"";position:absolute;left:0;top:0;width:90px;height:1px;background:var(--cyan);box-shadow:0 0 15px var(--cyan)}
+.console{display:grid;grid-template-columns:360px 1fr;gap:1px}
+.controls{padding:24px;background:rgba(2,7,13,.3)}
+.console-title{font:700 11px Orbitron;color:#9cb7ce;letter-spacing:.12em;margin-bottom:20px}
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:20px}
+.profile{cursor:pointer;text-align:center;padding:10px 4px;border:1px solid rgba(103,211,255,.12);border-radius:7px;background:#07101c;color:#6e879e;font:700 9px Orbitron;transition:.2s}
+.profile:hover,.profile.active{border-color:var(--cyan);color:#e8fbff;box-shadow:inset 0 0 20px rgba(92,236,255,.06)}
+.field{margin:17px 0}.field label{display:flex;justify-content:space-between;color:#7e98b0;font:600 9px Orbitron;letter-spacing:.08em;margin-bottom:8px}.field label b{color:var(--cyan)}
+input[type=range]{width:100%;accent-color:var(--cyan);height:4px}
+select{width:100%;padding:11px;border:1px solid rgba(103,211,255,.18);border-radius:7px;background:#050c15;color:#dffaff;font:500 11px "Space Grotesk"}
+.action{display:grid;grid-template-columns:1fr 48px;gap:8px;margin-top:20px}.action .btn{width:100%}
+.results{padding:20px;display:grid;grid-template-rows:auto 1fr auto;gap:12px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.metric{padding:14px;border:1px solid rgba(103,211,255,.12);background:rgba(2,8,14,.36);border-radius:9px}
+.metric small{display:block;color:#5d7790;font:600 8px Orbitron;letter-spacing:.1em}.metric strong{display:block;margin-top:6px;font:700 20px Orbitron;color:#eafaff}.metric strong.cyan{color:var(--cyan)}.metric strong.green{color:var(--green)}
+.chart-wrap{position:relative;border:1px solid rgba(103,211,255,.12);border-radius:9px;background:radial-gradient(circle at 50% 0,rgba(92,236,255,.04),transparent 45%),#030913;overflow:hidden}
+canvas{display:block;width:100%;height:350px}
+.scanline{position:absolute;left:0;right:0;height:1px;background:rgba(92,236,255,.25);box-shadow:0 0 15px var(--cyan);animation:scan 4s linear infinite;pointer-events:none}
+@keyframes scan{from{top:0}to{top:100%}}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:#668198;font:600 8px Orbitron;letter-spacing:.08em}.legend i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cyan);margin-right:5px}.legend i.red{background:var(--red)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.info{padding:19px}.info h3{font:700 13px Orbitron;margin:0 0 9px}.info p{font-size:12px;color:#718ba3;line-height:1.65;margin:0}.formula{margin-top:12px;padding:10px;background:#030913;border:1px solid rgba(103,211,255,.1);border-radius:7px;color:#a9dff0;font:500 10px ui-monospace,monospace;overflow:auto}
+.telemetry{display:grid;grid-template-columns:1fr 1fr;gap:12px}.telemetry .panel{padding:18px}
+.bar{height:7px;background:#07111c;border-radius:99px;overflow:hidden;border:1px solid rgba(103,211,255,.08);margin:10px 0 15px}.bar span{display:block;height:100%;width:50%;background:linear-gradient(90deg,var(--cyan),var(--violet));box-shadow:0 0 14px var(--cyan);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+footer{border-top:1px solid rgba(103,211,255,.1);padding:35px 0 70px;color:#526b83;font:600 9px Orbitron;letter-spacing:.08em}
+@media(max-width:900px){.hero,.console,.telemetry{grid-template-columns:1fr}.hud-orbit{height:360px}.metrics{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:1fr}.navlinks{display:none}}
+@media(max-width:560px){.hero{padding-top:35px}.radar{width:330px}.orbitline{width:320px}.earth{width:145px;height:145px}.metrics{grid-template-columns:1fr 1fr}.status{display:none}}
+</style>
+</head>
+<body>
+<div id="stars"></div><div id="fx"></div>
+
+<header class="container">
+<nav class="nav">
+  <div class="brand"><div class="reactor"></div> ORBIT-X <span style="color:#5c7289">/</span> OD-I</div>
+  <div class="navlinks"><a href="#simulator">SIMULATOR</a><a href="#physics">PHYSICS</a><a href="#profiles">PROFILES</a></div>
+  <div class="status"><i></i>SYSTEM ONLINE</div>
+</nav>
+
+<div class="hero">
+  <div>
+    <div class="kicker">Orbital Intelligence Interface // 02</div>
+    <h1>ORBITAL<br><span>DECAY.</span></h1>
+    <p>A cinematic, interactive orbital-decay laboratory. Push a spacecraft through a simplified thermosphere model and watch atmospheric drag drain its orbit in real time.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="#simulator">INITIALISE SIMULATION</a>
+      <a class="btn" href="#physics">VIEW PHYSICS</a>
+    </div>
+  </div>
+  <div class="hud-orbit">
+    <div class="readout">ALT <b id="heroAlt">420 KM</b><br>VEL <b id="heroVel">7.67 KM/S</b><br>MODE <b>SIM</b><br>TRACK <b>LOCKED</b></div>
+    <div class="radar"><div class="radar-grid"></div><div class="sweep"></div></div>
+    <div class="orbitline"><div class="satellite"></div></div><div class="earth"></div>
+  </div>
+</div>
+</header>
+
+<main class="container">
+<section id="simulator">
+<div class="section-head"><div><h2>TACTICAL SIMULATION CONSOLE</h2><p>Every control changes the model. The graph is calculated entirely in your browser — no server, API or telemetry required.</p></div></div>
+<div class="panel console">
+  <aside class="controls">
+    <div class="console-title">SPACECRAFT PROFILE // QUICK LOAD</div>
+    <div class="profile-grid">
+      <button class="profile active" data-p="iss">ISS</button><button class="profile" data-p="hubble">HUBBLE</button><button class="profile" data-p="starlink">STARLINK</button>
+    </div>
+    <div class="field"><label>STARTING ALTITUDE <b id="altV">420 KM</b></label><input id="alt" type="range" min="160" max="900" value="420"></div>
+    <div class="field"><label>MASS <b id="massV">420,000 KG</b></label><input id="mass" type="range" min="100" max="500000" step="100" value="420000"></div>
+    <div class="field"><label>DRAG AREA <b id="areaV">1,000 M²</b></label><input id="area" type="range" min="1" max="2000" value="1000"></div>
+    <div class="field"><label>DRAG COEFFICIENT <b id="cdV">2.20</b></label><input id="cd" type="range" min="1.2" max="3" step=".01" value="2.2"></div>
+    <div class="field"><label>ATMOSPHERIC ACTIVITY <b id="solarV">MODERATE</b></label><select id="solar"><option value=".55">LOW SOLAR ACTIVITY</option><option value="1" selected>MODERATE ACTIVITY</option><option value="1.65">HIGH SOLAR ACTIVITY</option></select></div>
+    <div class="action"><button class="btn primary" id="run">RUN DECAY SEQUENCE</button><button class="btn danger" id="reset" title="Reset">↺</button></div>
+  </aside>
+  <section class="results">
+    <div class="metrics">
+      <div class="metric"><small>TIME TO 120 KM</small><strong class="cyan" id="time">—</strong></div>
+      <div class="metric"><small>ORBITAL SPEED</small><strong id="speed">—</strong></div>
+      <div class="metric"><small>DECAY RATE</small><strong id="rate">—</strong></div>
+      <div class="metric"><small>LIVE STATUS</small><strong class="green" id="state">READY</strong></div>
+    </div>
+    <div class="chart-wrap"><div class="scanline"></div><canvas id="chart"></canvas></div>
+    <div class="legend"><span><i></i>ORBITAL ALTITUDE</span><span><i class="red"></i>120 KM REENTRY THRESHOLD</span><span>MODEL: NEAR-CIRCULAR / ATMOSPHERIC DRAG</span></div>
+  </section>
+</div>
+</section>
+
+<section id="physics">
+<div class="section-head"><div><h2>THE ENGINE UNDER THE HUD</h2><p>The interface is flashy; the underlying model stays transparent so the project can be explained in a science or computing presentation.</p></div></div>
+<div class="cards">
+<div class="panel info"><h3>01 / DRAG FORCE</h3><p>Atmospheric particles collide with the spacecraft and remove orbital energy. Density and effective cross-sectional area are the biggest visual levers.</p><div class="formula">D = ½ · Cd · ρ · A · v²</div></div>
+<div class="panel info"><h3>02 / ORBITAL ENERGY</h3><p>For a near-circular orbit, combining orbital energy with drag gives a differential equation for the semimajor axis.</p><div class="formula">da/dt = −(CdρA/m) · √(μa)</div></div>
+<div class="panel info"><h3>03 / ATMOSPHERE</h3><p>The thermosphere is not uniform. This demo uses an exponential interpolation table and scales it for low, moderate or high solar activity.</p><div class="formula">ρ(h) ≈ ρ₀ · exp(−Δh/H)</div></div>
+</div>
+</section>
+
+<section id="profiles">
+<div class="section-head"><div><h2>MISSION PROFILES</h2><p>Representative values are rounded for an educational simulator. They are not live spacecraft telemetry.</p></div></div>
+<div class="cards">
+<div class="panel info"><h3>ISS // ORBITAL OUTPOST</h3><p>420,000 kg · 420 km · 1,000 m² effective area · Cd 2.20</p></div>
+<div class="panel info"><h3>HUBBLE // SPACE TELESCOPE</h3><p>11,110 kg · 540 km · 60 m² effective area · Cd 2.20</p></div>
+<div class="panel info"><h3>STARLINK // LEO NODE</h3><p>260 kg · 550 km · 10 m² effective area · Cd 2.20</p></div>
+</div>
+</section>
+
+<section>
+<div class="section-head"><div><h2>LIVE TELEMETRY</h2><p>Visual indicators respond to the current simulation parameters.</p></div></div>
+<div class="telemetry">
+<div class="panel"><div class="console-title">ATMOSPHERIC LOAD</div><div class="bar"><span id="loadBar"></span></div><div style="font:600 10px Orbitron;color:#68839b">DENSITY INDEX <b id="densityText" style="color:#5cecff">—</b></div></div>
+<div class="panel"><div class="console-title">BALLISTIC COEFFICIENT</div><div class="bar"><span id="bcBar"></span></div><div style="font:600 10px Orbitron;color:#68839b">MASS / (CD × AREA) <b id="bcText" style="color:#9d6cff">—</b></div></div>
+</div>
+</section>
+
+<footer>ORBIT-X // EDUCATIONAL SPACE PHYSICS LAB · ALL COMPUTATION LOCAL · NOT FOR FLIGHT SAFETY OR OPERATIONAL ORBIT PREDICTION</footer>
+</main>
+
+<script>
+const MU=3.986004418e14, RE=6371000, TARGET=120;
+const profiles={
+ iss:{alt:420,mass:420000,area:1000,cd:2.2},
+ hubble:{alt:540,mass:11110,area:60,cd:2.2},
+ starlink:{alt:550,mass:260,area:10,cd:2.2}
+};
+const atm=[[120,5e-7],[140,1e-8],[160,2e-9],[180,5e-10],[200,2.5e-10],[220,1.1e-10],[250,5e-11],[300,1.9e-11],[350,7e-12],[400,3e-12],[450,1.4e-12],[500,7e-13],[550,3.7e-13],[600,2e-13],[700,6e-14],[800,2.2e-14],[900,9e-15]];
+const $=id=>document.getElementById(id);
+function rho(h,a){
+ if(h<=atm[0][0])return atm[0][1]*Math.exp(-(h-atm[0][0])/8)*a;
+ if(h>=900)return atm.atm?.[16]?.[1]||9e-15;
+ for(let i=0;i<atm.length-1;i++){
+  let [h0,r0]=atm[i],[h1,r1]=atm[i+1];
+  if(h>=h0&&h<=h1){let f=(h-h0)/(h1-h0);return Math.exp(Math.log(r0)+(Math.log(r1)-Math.log(r0))*f)*a}
+ }
+ return atm[0][1];
+}
+function simulate(){
+ let h=+$("alt").value,m=+$("mass").value,A=+$("area").value,Cd=+$("cd").value,act=+$("solar").value,t=0,pts=[],next=0;
+ const max=100*365.25*86400;
+ const f=hh=>-(Cd*rho(hh,act)*A/m)*Math.sqrt(MU*(RE+hh*1000))/1000;
+ while(h>TARGET&&t<max){
+  let dt=h>300?86400:h>200?21600:3600;
+  let k1=f(h),k2=f(h+k1*dt/2),k3=f(h+k2*dt/2),k4=f(h+k3*dt);
+  h+=(k1+2*k2+2*k3+k4)*dt/6;t+=dt;
+  if(t>=next){pts.push({t,h:Math.max(TARGET,h)});next=t+(h>300?30:7)*86400}
+  if(!Number.isFinite(h))break;
+ }
+ const a=RE+$("alt").value*1000,v=Math.sqrt(MU/a),dr=Math.abs(f(+$("alt").value));
+ return {t,pts,v,dr,bc:m/(Cd*A),density:rho(+$("alt").value,act)};
+}
+function duration(s){let d=s/86400;if(!isFinite(s))return"—";if(d<2)return d.toFixed(1)+" D";if(d<365)return Math.round(d)+" D";let y=d/365.25;return(y<10?y.toFixed(1):Math.round(y))+" YR"}
+function draw(pts){
+ const c=$("chart"),r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=r.width*d;c.height=r.height*d;
+ const xctx=c.getContext("2d");xctx.setTransform(d,0,0,d,0,0);const W=r.width,H=r.height,p={l:52,r:20,t:22,b:35};
+ xctx.clearRect(0,0,W,H);
+ const maxT=Math.max(1,pts.at(-1)?.t||1),maxH=Math.max(...pts.map(q=>q.h),130),minH=120;
+ const X=t=>p.l+t/maxT*(W-p.l-p.r),Y=h=>p.t+(maxH-h)/(maxH-minH)*(H-p.t-p.b);
+ xctx.strokeStyle="rgba(100,190,230,.11)";xctx.lineWidth=1;
+ for(let i=0;i<5;i++){let y=p.t+i*(H-p.t-p.b)/4;xctx.beginPath();xctx.moveTo(p.l,y);xctx.lineTo(W-p.r,y);xctx.stroke()}
+ xctx.font="9px Orbitron";xctx.fillStyle="#58758e";
+ for(let i=0;i<5;i++){let v=Math.round(maxH-(maxH-minH)*i/4);xctx.fillText(v+" KM",8,p.t+i*(H-p.t-p.b)/4+3)}
+ xctx.strokeStyle="#ff4f73";xctx.setLineDash([5,5]);xctx.beginPath();xctx.moveTo(p.l,Y(120));xctx.lineTo(W-p.r,Y(120));xctx.stroke();xctx.setLineDash([]);
+ if(pts.length>1){
+  let g=xctx.createLinearGradient(0,0,W,0);g.addColorStop(0,"#5cecff");g.addColorStop(1,"#9d6cff");xctx.strokeStyle=g;xctx.lineWidth=3;xctx.beginPath();
+  pts.forEach((q,i)=>i?xctx.lineTo(X(q.t),Y(q.h)):xctx.moveTo(X(q.t),Y(q.h)));xctx.stroke();
+  let q=pts.at(-1);xctx.fillStyle="#5cecff";xctx.shadowBlur=15;xctx.shadowColor="#5cecff";xctx.beginPath();xctx.arc(X(q.t),Y(q.h),4,0,7);xctx.fill();xctx.shadowBlur=0;
+ }
+ xctx.fillStyle="#58758e";xctx.fillText("0",p.l,H-12);xctx.fillText(duration(maxT),W-65,H-12);
+}
+function updateLabels(){
+ $("altV").textContent=(+$("alt").value).toLocaleString()+" KM";
+ $("massV").textContent=(+$("mass").value).toLocaleString()+" KG";
+ $("areaV").textContent=(+$("area").value).toLocaleString()+" M²";
+ $("cdV").textContent=(+$("cd").value).toFixed(2);
+ $("solarV").textContent=$("solar").selectedOptions[0].text.replace(" ACTIVITY","");
+ const r=simulate(); $("heroAlt").textContent=$("alt").value+" KM";$("heroVel").textContent=(r.v/1000).toFixed(2)+" KM/S";
+ $("densityText").textContent=r.density.toExponential(2)+" KG/M³";
+ $("bcText").textContent=Math.round(r.bc).toLocaleString()+" KG/M²";
+ $("loadBar").style.width=Math.min(100,Math.max(4,Math.log10(r.density/1e-14+1)*22))+"%";
+ $("bcBar").style.width=Math.min(100,Math.max(4,r.bc/6000*100))+"%";
+}
+function run(){
+ updateLabels();let r=simulate();
+ $("time").textContent=duration(r.t);$("speed").textContent=(r.v/1000).toFixed(2)+" KM/S";
+ let rd=r.dr*86400;$("rate").textContent=rd<.01?rd.toExponential(1)+" KM/D":rd.toFixed(3)+" KM/D";
+ $("state").textContent="TRACKING";setTimeout(()=>{$("state").textContent="SIM COMPLETE"},650);draw(r.pts);
+}
+document.querySelectorAll(".profile").forEach(b=>b.onclick=()=>{document.querySelectorAll(".profile").forEach(x=>x.classList.remove("active"));b.classList.add("active");let p=profiles[b.dataset.p];$("alt").value=p.alt;$("mass").value=p.mass;$("area").value=p.area;$("cd").value=p.cd;run()});
+["alt","mass","area","cd","solar"].forEach(id=>$(id).addEventListener("input",updateLabels));
+$("run").onclick=run;
+$("reset").onclick=()=>{let p=profiles.iss;$("alt").value=p.alt;$("mass").value=p.mass;$("area").value=p.area;$("cd").value=p.cd;$("solar").value=1;document.querySelectorAll(".profile").forEach(x=>x.classList.remove("active"));document.querySelector('[data-p="iss"]').classList.add("active");run()};
+const stars=$("stars");for(let i=0;i<150;i++){let s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.width=s.style.height=(Math.random()*2+1)+"px";s.style.setProperty("--d",(1.5+Math.random()*4)+"s");s.style.animationDelay=(-Math.random()*4)+"s";stars.appendChild(s)}
+window.addEventListener("resize",()=>{draw(simulate().pts)});
+run();
+</script>
+</body>
+</html>
